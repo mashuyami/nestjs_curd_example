@@ -1,0 +1,149 @@
+chạy cái này trc
+npm install -g npm
+npm install -g @nestjs/cli
+sau đó chạy 
+nest new Projeto-API
+chạy chương trình
+npm run start:dev
+chạy npm mysql-server
+npm install --save typeorm mysql2
+tài liệu
+fonte: https://docs.nestjs.com/recipes/sql-typeorm
+cìa đặt tài liệu swagger
+npm install --save @nestjs/swagger
+thên đoạn code vào file main.ts
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+  const app = await NestFactory.create(AppModule);
+const config = new DocumentBuilder()
+    .setTitle('Cats example')
+    .setDescription('The cats API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+    await app.listen(3000);
+chạy np thư viện hỗ trợ tạo api tự dộng
+nest g resource cliente --no-spec
+chọn rest/api
+tạo thư mục database trong src ,sau đó tạo file 
+file: database.module.ts
+conteúdo:
+import { Module } from '@nestjs/common';
+import { databaseProviders } from './database.providers';
+
+@Module({
+  providers: [...databaseProviders],
+  exports: [...databaseProviders],
+})
+export class DatabaseModule {}
+tạo tiếp fule trong thư mục database
+file: database.providers.ts
+
+import { DataSource } from 'typeorm';
+
+export const databaseProviders = [
+  {
+    provide: 'DATA_SOURCE',
+    useFactory: async () => {
+      const dataSource = new DataSource({
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        username: 'root',
+        password: 'null',
+        database: 'test',
+        entities: [__dirname + '/../**/*.entity{.ts,.js}',],
+        synchronize: true,
+      });
+
+      return dataSource.initialize();
+    },
+  },
+];
+trong thư mục cliente tạo file cliente.Providers.ts
+file: cliente.providers.ts
+conteúdo:
+import { DataSource } from 'typeorm';
+import { Cliente } from './entities/cliente.entity';
+
+export const clienteProviders = [
+  {
+    provide: 'CLIENTE_REPOSITORY',
+    useFactory: (dataSource: DataSource) => dataSource.getRepository(Cliente),
+    inject: ['DATA_SOURCE'],
+  },
+];
+trong clienteController bổ sung phần constructor
+constructor(
+    @Inject('CLIENTE_REPOSITORY')
+    private clienteRepository: Repository<Cliente>,
+  ) {}
+trong phần clienteservice
+thay đổi đối tượng trả về của các method
+//  findAll :
+return this.clienteRepository.find();
+
+// create :
+return this.clienteRepository.save(createClienteDto);
+
+//  findOne :
+return this.clienteRepository.findOne({ where: { id } });
+
+//  update :
+return this.clienteRepository.update(id, updateClienteDto);
+
+// delete:
+return this.clienteRepository.delete(id);
+
+thay đổi code trong clientemodule
+imports: [DatabaseModule],
+providers: [...clienteProviders,ClienteService,]
+trong dto thay code trong createClienteDto
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+
+@Entity()
+export class Cliente {
+@PrimaryGeneratedColumn()
+id: number;
+
+@Column({ length: 100 })
+nome: string;
+
+@Column({ length: 255 })
+email: string;
+
+@Column({ length: 11 })
+cpf: string;
+
+@Column({ length: 11 })
+fone: string;
+
+@Column({ length: 11 })
+celular: string;
+
+@Column()
+status: boolean;
+}
+trong dto thay code trong updateClienteDto
+import { IsBoolean, IsString } from 'class-validator';
+
+@IsString()
+nome: string;
+
+@IsString()
+email: string;
+
+@IsString()
+cpf: string;
+
+@IsString()
+fone: string;
+
+@IsString()
+celular: string;
+
+@IsBoolean()
+status: boolean;
+chạy url :
+loacahost:3000/api
