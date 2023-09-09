@@ -63,7 +63,6 @@ export const databaseProviders = [
 ];
 trong thư mục cliente tạo file cliente.Providers.ts
 file: cliente.providers.ts
-conteúdo:
 import { DataSource } from 'typeorm';
 import { Cliente } from './entities/cliente.entity';
 
@@ -147,3 +146,5 @@ celular: string;
 status: boolean;
 chạy url :
 loacahost:3000/api
+ps : cái này mk làm theo trên youtube :https://www.youtube.com/watch?v=QOMiiZ8CUYM
+Thank you!
